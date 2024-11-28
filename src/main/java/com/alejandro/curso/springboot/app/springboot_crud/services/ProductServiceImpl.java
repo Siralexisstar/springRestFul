@@ -1,6 +1,5 @@
 package com.alejandro.curso.springboot.app.springboot_crud.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +45,7 @@ public class ProductServiceImpl implements ProductService {
         optionalProduct.ifPresent(prod -> {
             productRepository.delete(product);
         });
+
         return optionalProduct;
     }
 
