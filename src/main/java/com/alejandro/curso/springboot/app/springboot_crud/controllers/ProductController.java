@@ -51,6 +51,7 @@ public class ProductController {
 
     }
 
+    /** Este simplemente lo que hace es recuperar el objeto y actualizarlo */
     @PutMapping("/{id}")
     public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product product) {
 
@@ -60,11 +61,23 @@ public class ProductController {
 
     }
 
+    @PutMapping("update2/{id}")
+    public ResponseEntity<Product> update2(@PathVariable Long id, @RequestBody Product product) {
+
+        product.setId(id);
+
+        /***Le metemos validacion */
+        Optional<Product> proOptional = service.update(id, product);
+        return (proOptional.isPresent()) ? ResponseEntity.ok(proOptional.orElseThrow())
+                : ResponseEntity.notFound().build();
+
+    }
+
     @DeleteMapping("{id}")
     public ResponseEntity<Product> delete(@PathVariable Long id) {
         Product product = new Product();
         product.setId(id);
-        Optional<Product> proOptional = service.delete(product); //LOGICA DE ELIMINADO
+        Optional<Product> proOptional = service.delete(id); // LOGICA DE ELIMINADO
 
         return (proOptional.isPresent()) ? ResponseEntity.ok(proOptional.orElseThrow())
                 : ResponseEntity.notFound().build();

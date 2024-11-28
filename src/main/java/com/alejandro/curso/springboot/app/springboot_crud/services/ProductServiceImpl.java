@@ -26,7 +26,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     @Override
     public Optional<Product> findById(Long id) {
-        
+
         return productRepository.findById(id);
     }
 
@@ -39,14 +39,35 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Override
-    public Optional<Product> delete(Product product) {
+    public Optional<Product> delete(Long id) {
 
-        Optional<Product> optionalProduct = productRepository.findById(product.getId());
+        /** Simplemente modificamos para eliminar por id */
+        Optional<Product> optionalProduct = productRepository.findById(id);
         optionalProduct.ifPresent(prod -> {
-            productRepository.delete(product);
+            productRepository.delete(prod);
         });
 
         return optionalProduct;
+    }
+
+    @Override
+    @Transactional
+    public Optional<Product> update(Long id, Product product) {
+
+        Optional<Product> productOptional = productRepository.findById(id);
+
+        if (productOptional.isPresent()) {
+
+            /** Recuperamos el de la bbdd y seteamos el nuevo */
+            Product productDb = productOptional.orElseThrow();
+
+            productDb.setName(product.getName());
+            productDb.setPrice(product.getPrice());
+            productDb.setDescription(product.getDescription());
+
+        }
+
+        return productOptional;
     }
 
 }
