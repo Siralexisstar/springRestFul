@@ -1,16 +1,21 @@
 package com.alejandro.curso.springboot.app.springboot_crud.controllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.hibernate.query.NativeQuery.ReturnProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alejandro.curso.springboot.app.springboot_crud.entities.Product;
 import com.alejandro.curso.springboot.app.springboot_crud.services.ProductService;
+
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,17 +48,27 @@ public class ProductController {
         return ResponseEntity.notFound().build();
     }
 
+    /** Añadimos el valid para que nos valide los campos */
     @PostMapping("insertData")
-    public ResponseEntity<Product> create(@RequestBody Product product) {
+    public ResponseEntity<?> create(@Valid @RequestBody Product product, BindingResult result) {
 
-        Product productNew = service.save(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(productNew);
+        /**
+         * Vamos a validad con el Binding result
+         * Ponemos un signo pregunta para poder devolver algo que no sea Producto
+         */
+        if (result.hasFieldErrors()) {
+
+            return validation(result);
+
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.save(product));
 
     }
 
     /** Este simplemente lo que hace es recuperar el objeto y actualizarlo */
     @PutMapping("/{id}")
-    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product product) {
+    public ResponseEntity<Product> update(@Valid @PathVariable Long id, @RequestBody Product product) {
 
         product.setId(id);
 
@@ -62,11 +77,16 @@ public class ProductController {
     }
 
     @PutMapping("update2/{id}")
-    public ResponseEntity<Product> update2(@PathVariable Long id, @RequestBody Product product) {
+    public ResponseEntity<?> update2(@Valid @RequestBody Product product, BindingResult result,
+            @PathVariable Long id) {
+
+        if (result.hasErrors()) {
+            return validation(result);
+        }
 
         product.setId(id);
 
-        /***Le metemos validacion */
+        /*** Le metemos validacion */
         Optional<Product> proOptional = service.update(id, product);
         return (proOptional.isPresent()) ? ResponseEntity.ok(proOptional.orElseThrow())
                 : ResponseEntity.notFound().build();
@@ -82,6 +102,27 @@ public class ProductController {
         return (proOptional.isPresent()) ? ResponseEntity.ok(proOptional.orElseThrow())
                 : ResponseEntity.notFound().build();
 
+    }
+
+    /**
+     * Funcion que se encarga de recoger los errores de binding y construir un
+     * map con los errores y sus correspondientes mensajes.
+     * 
+     * @param result objeto que contiene los errores de binding
+     * @return un ResponseEntity con un map de errores y un status 400
+     */
+    private ResponseEntity<?> validation(BindingResult result) {
+
+        /** Hacemos un mapa con los errores */
+        Map<String, String> errors = new HashMap();
+
+        // Obtenemos la lista de los errores
+        result.getFieldErrors().forEach(err -> {
+            errors.put(err.getField(), "El campo " + err.getField()
+                    + " tiene un error " + err.getDefaultMessage());
+        });
+
+        return ResponseEntity.badRequest().body(errors);
     }
 
 }
