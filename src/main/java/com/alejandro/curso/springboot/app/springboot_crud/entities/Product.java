@@ -25,15 +25,15 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotEmpty
-    @Size(min= 4, max = 12)
+    @NotEmpty(message = "{NotEmpty.product.name}")
+    @Size(min = 4, max = 12)
     private String name;
 
-    @Min(500)
-    @NotNull
+    @Min(value = 500, message = "{Min.product.price}")
+    @NotNull(message = "{NotNull.product.price}")
     private Integer price;
 
-    @NotBlank
+    @NotBlank(message = "{NotBlannk.product.description}")
     private String description;
 
     public Product(String name, Integer price, String description) {

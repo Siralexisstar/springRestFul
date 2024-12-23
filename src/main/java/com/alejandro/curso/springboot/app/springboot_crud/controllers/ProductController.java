@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alejandro.curso.springboot.app.springboot_crud.ProductValidation;
 import com.alejandro.curso.springboot.app.springboot_crud.entities.Product;
 import com.alejandro.curso.springboot.app.springboot_crud.services.ProductService;
 
@@ -32,6 +33,9 @@ public class ProductController {
     @Autowired
     private ProductService service;
 
+    @Autowired
+    private ProductValidation validation;
+
     @GetMapping("/hello")
     public List<Product> list() {
         return service.findAll();
@@ -51,6 +55,9 @@ public class ProductController {
     /** Añadimos el valid para que nos valide los campos */
     @PostMapping("insertData")
     public ResponseEntity<?> create(@Valid @RequestBody Product product, BindingResult result) {
+
+        // Pasamos la validacion por el controlador
+        validation.validate(product, result);
 
         /**
          * Vamos a validad con el Binding result
@@ -80,6 +87,8 @@ public class ProductController {
     public ResponseEntity<?> update2(@Valid @RequestBody Product product, BindingResult result,
             @PathVariable Long id) {
 
+        // Pasamos la validacion por el controlador
+        validation.validate(product, result);
         if (result.hasErrors()) {
             return validation(result);
         }
